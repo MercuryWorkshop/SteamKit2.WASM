@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591;CA1822</NoWarn>
+    <DefineConstants Condition="'$(TargetFramework)'=='net472'">$(DefineConstants);WRITE_DLL</DefineConstants>
+    <RootNamespace>Benchmark</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Benchmark\Codegen\*.cs" />
+    <Compile Include="..\Benchmark\*.cs" />
+    <Compile Remove="..\Benchmark\BufferStrategyBenchmarks.cs" />
+    <Compile Remove="..\Benchmark\BufferStrategyBenchmarks.generated.cs" />
+    <None Include="..\Tools\nwind.proto.bin" Link="nwind.proto.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="protobuf-net" VersionOverride="[2.4.7]" />
+    <PackageReference Include="Pipelines.Sockets.Unofficial" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+    <PackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="8.0.0"/>
+    <PackageReference Include="System.Reflection.Metadata" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="test.bin">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

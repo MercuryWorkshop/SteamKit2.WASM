@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net472;net8.0</TargetFrameworks>
+        <RootNamespace>ProtoBuf.FSharp.Test</RootNamespace>
+        <IsPackable>false</IsPackable>
+        <LangVersion>latest</LangVersion>
+        <GenerateProgramFile>false</GenerateProgramFile>
+        <NoWarn>$(NoWarn);FS0988</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="Tests.fs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+        <PackageReference Include="xunit" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="coverlet.collector">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\protobuf-net.Core\protobuf-net.Core.csproj" />
+        <ProjectReference Include="..\protobuf-net.FSharp\protobuf-net.FSharp.csproj" />
+        <ProjectReference Include="..\protobuf-net\protobuf-net.csproj" />
+    </ItemGroup>
+</Project>

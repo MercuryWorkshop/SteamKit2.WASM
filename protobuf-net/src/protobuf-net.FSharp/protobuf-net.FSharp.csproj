@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net462;netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
+    <RootNamespace>ProtoBuf.FSharp</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FSharp.Core" VersionOverride="8.0.200" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\protobuf-net.Core\protobuf-net.Core.csproj" />
+  </ItemGroup>
+</Project>

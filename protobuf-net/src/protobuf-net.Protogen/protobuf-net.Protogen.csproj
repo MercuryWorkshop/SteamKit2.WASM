@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <Configurations>Debug;Release;VS</Configurations>
+    <PackAsTool>true</PackAsTool>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <AssemblyName>protogen</AssemblyName>
+    <ToolCommandName>protogen</ToolCommandName>
+    <PackageId>protobuf-net.Protogen</PackageId>
+    <Title>protobuf-net command-line "global tool" for .NET code-generation from .proto schema files</Title>
+    <GrpcTools>true</GrpcTools>
+    <ApplicationIcon>protobuf-net.ico</ApplicationIcon>
+    <RollForward>LatestMajor</RollForward>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(GrpcTools)'=='true'">
+    <DefineConstants>$(DefineConstants);GRPC_TOOLS</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\protogen\**\*.cs" Exclude="..\protogen\obj\**\*" />
+    <ProjectReference Include="../protobuf-net.Reflection/protobuf-net.Reflection.csproj" />
+    <ProjectReference Include="../protobuf-net/protobuf-net.csproj" />
+    <PackageReference Include="protobuf-net.Grpc.Reflection" Condition="'$(GrpcTools)'=='true'" />
+    <PackageReference Include="Grpc.Net.Client" Condition="'$(GrpcTools)'=='true'" />
+  </ItemGroup>
+</Project>
