@@ -13,6 +13,9 @@ using SteamKit2;
 using SteamKit2.Authentication;
 using SteamKit2.CDN;
 using SteamKit2.Internal;
+using System.IO;
+using System.Security.Cryptography;
+using System.Net.Http;
 
 namespace DepotDownloader
 {
@@ -87,6 +90,49 @@ namespace DepotDownloader
 
             Console.Write("Connecting to Steam3...");
             Connect();
+        }
+
+        public async Task<bool> DownloadSteamCloud(uint appid, uint count, string prefix)
+        {
+            var success = true;
+            var response = await steamClient.Cloud.EnumerateUserFiles(appid, count);
+            Console.WriteLine(response.total_files);
+            foreach (var file in response.files)
+            {
+                if (File.Exists(prefix + file.filename))
+                {
+                    var sha = SHA1.Create();
+                    using var stream = File.OpenRead(prefix + file.filename);
+                    var hash = sha.ComputeHash(stream);
+                    var hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                    if (hashString == file.file_sha)
+                    {
+                        Console.WriteLine("File {0} is already downloaded and has the correct hash", file.filename);
+                        continue;
+                    }
+                }
+
+                Console.WriteLine("Downloading file {0} {1}", file.filename, file.url);
+                try
+                {
+
+                    Directory.CreateDirectory(Path.GetDirectoryName(file.filename));
+
+                    using var fs = File.OpenWrite(prefix + file.filename);
+                    var downloadUrl = file.url;
+                    using var client = new HttpClient();
+                    var fileres = await client.GetAsync(downloadUrl);
+                    await fileres.Content.CopyToAsync(fs);
+                    fs.Close();
+                    Console.WriteLine("Downloaded file {0}", file.filename);
+                }
+                catch (Exception e)
+                {
+                    success = false;
+                    Console.WriteLine("Failed to download file {0} {1}", file.filename, e);
+                }
+            }
+            return success;
         }
 
         public delegate bool WaitCondition();

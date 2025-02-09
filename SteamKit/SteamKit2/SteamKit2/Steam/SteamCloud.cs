@@ -35,28 +35,21 @@ namespace SteamKit2
             CloudService = unifiedMessages.CreateService<Internal.Cloud>();
         }
 
-        public async Task<CCloud_EnumerateUserFiles_Response> EnumerateUserFiles() {
-            var request = new CCloud_EnumerateUserFiles_Request {
-                appid = 105600,
-                count = 20,
+        public async Task<CCloud_EnumerateUserFiles_Response> EnumerateUserFiles( uint appid, uint count )
+        {
+            var request = new CCloud_EnumerateUserFiles_Request
+            {
+                appid = appid,
+                count = count,
                 start_index = 0,
                 extended_details = true,
             };
 
-            var response = await CloudService.EnumerateUserFiles(request);
+            var response = await CloudService.EnumerateUserFiles( request );
 
             if ( response.Result != EResult.OK )
             {
-                Console.WriteLine("Failed to generate token");
-                // throw new AuthenticationException( "Failed to generate token", response.Result );
-            }
-            Console.WriteLine(response.Body.total_files);
-            foreach (var file in response.Body.files) {
-                Console.WriteLine(file.filename);
-                Console.WriteLine(file.file_size);
-                Console.WriteLine(file.url);
-                Console.WriteLine(file.file_sha);
-                Console.WriteLine(file.ugcid);
+                throw new Exception( "Failed to enumerate: " + response.Result );
             }
 
             return response.Body;
