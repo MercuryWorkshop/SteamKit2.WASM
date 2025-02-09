@@ -1,4 +1,4 @@
-﻿/*
+/*
  * This file is subject to the terms and conditions defined in
  * file 'license.txt', which is part of this source code package.
  */
@@ -69,6 +69,7 @@ namespace SteamKit2.CDN
         /// <exception cref="SteamKitWebRequestException">A network error occurred when performing the request.</exception>
         public async Task<DepotManifest> DownloadManifestAsync( uint depotId, ulong manifestId, ulong manifestRequestCode, Server server, byte[]? depotKey = null, Server? proxyServer = null, string? cdnAuthToken = null )
         {
+            return null;
             ArgumentNullException.ThrowIfNull( server );
 
             const uint MANIFEST_VERSION = 5;
@@ -202,6 +203,8 @@ namespace SteamKit2.CDN
         /// <exception cref="SteamKitWebRequestException">A network error occurred when performing the request.</exception>
         public async Task<int> DownloadDepotChunkAsync( uint depotId, DepotManifest.ChunkData chunk, Server server, byte[] destination, byte[]? depotKey = null, Server? proxyServer = null, string? cdnAuthToken = null )
         {
+
+            return 0;
             ArgumentNullException.ThrowIfNull( server );
             ArgumentNullException.ThrowIfNull( chunk );
             ArgumentNullException.ThrowIfNull( destination );

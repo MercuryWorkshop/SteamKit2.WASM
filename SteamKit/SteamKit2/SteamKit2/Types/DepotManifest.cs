@@ -23,7 +23,7 @@ namespace SteamKit2
     public sealed class DepotManifest
     {
         // Mono is nuts and has '/' for both dirchar and altdirchar, going against the lore
-        private static char altDirChar = (Path.DirectorySeparatorChar == '\\') ? '/' : '\\';
+        private static char altDirChar = ( Path.DirectorySeparatorChar == '\\' ) ? '/' : '\\';
 
         private const int PROTOBUF_PAYLOAD_MAGIC = 0x71F617D0;
         private const int PROTOBUF_METADATA_MAGIC = 0x1F4812BE;
@@ -129,15 +129,15 @@ namespace SteamKit2
             /// <summary>
             /// Initializes a new instance of the <see cref="FileData"/> class with specified values.
             /// </summary>
-            public FileData(string filename, byte[] filenameHash, EDepotFileFlag flag, ulong size, byte[] hash, string linkTarget, bool encrypted, int numChunks)
+            public FileData( string filename, byte[] filenameHash, EDepotFileFlag flag, ulong size, byte[] hash, string linkTarget, bool encrypted, int numChunks )
             {
-                if (encrypted)
+                if ( encrypted )
                 {
                     this.FileName = filename;
                 }
                 else
                 {
-                    this.FileName = filename.Replace(altDirChar, Path.DirectorySeparatorChar);
+                    this.FileName = filename.Replace( altDirChar, Path.DirectorySeparatorChar );
                 }
 
                 this.FileNameHash = filenameHash;
@@ -219,9 +219,9 @@ namespace SteamKit2
         /// </summary>
         /// <param name="encryptionKey">The encryption key.</param>
         /// <returns><c>true</c> if the file names were successfully decrypted; otherwise, <c>false</c>.</returns>
-        public bool DecryptFilenames(byte[] encryptionKey)
+        public bool DecryptFilenames( byte[] encryptionKey )
         {
-            if (!FilenamesEncrypted)
+            if ( !FilenamesEncrypted )
             {
                 return true;
             }
@@ -267,17 +267,17 @@ namespace SteamKit2
                     {
                         var encryptedFilename = bufferDecoded.AsSpan()[ ..decodedLength ];
 
-                        var newiv = JsCrypto.AesDecryptEcb(encryptionKey.ToArray(), encryptedFilename[ ..iv.Length ].ToArray(), iv.ToArray());
-                        newiv.CopyTo(iv);
-                        byte[] newBufferDecrypted = JsCrypto.AesDecryptCbc(encryptionKey.ToArray(), encryptedFilename[ iv.Length.. ].ToArray(), iv.ToArray());
-                        newBufferDecrypted.CopyTo(bufferDecrypted.AsSpan());
+                        var newiv = JsCrypto.AesDecryptEcb( encryptionKey.ToArray(), encryptedFilename[ ..iv.Length ].ToArray(), iv.ToArray() );
+                        newiv.CopyTo( iv );
+                        byte[] newBufferDecrypted = JsCrypto.AesDecryptCbc( encryptionKey.ToArray(), encryptedFilename[ iv.Length.. ].ToArray(), iv.ToArray() );
+                        newBufferDecrypted.CopyTo( bufferDecrypted.AsSpan() );
                         filenameLength = newBufferDecrypted.Length;
                         // aes.DecryptEcb( encryptedFilename[ ..iv.Length ], iv, PaddingMode.None );
                         // filenameLength = aes.DecryptCbc( encryptedFilename[ iv.Length.. ], iv, bufferDecrypted, PaddingMode.PKCS7 );
                     }
                     catch ( Exception ex )
                     {
-                        Console.WriteLine(ex);
+                        Console.WriteLine( ex );
                         DebugLog.Assert( false, nameof( DepotManifest ), "Failed to decrypt the filename." );
                         return false;
                     }
@@ -292,7 +292,7 @@ namespace SteamKit2
                     MemoryExtensions.Replace( bufferDecrypted.AsSpan(), ( byte )altDirChar, ( byte )Path.DirectorySeparatorChar );
 
                     file.FileName = Encoding.UTF8.GetString( bufferDecrypted, 0, filenameLength );
-                    Console.WriteLine(file.FileName);
+                    Console.WriteLine( file.FileName );
                 }
             }
             finally
@@ -384,18 +384,18 @@ namespace SteamKit2
                 }
             }
 
-            if (payload != null && metadata != null && signature != null)
+            if ( payload != null && metadata != null && signature != null )
             {
-                ParseProtobufManifestMetadata(metadata);
-                ParseProtobufManifestPayload(payload);
+                ParseProtobufManifestMetadata( metadata );
+                ParseProtobufManifestPayload( payload );
             }
             else
             {
-                throw new InvalidDataException("Missing ContentManifest sections required for parsing depot manifest");
+                throw new InvalidDataException( "Missing ContentManifest sections required for parsing depot manifest" );
             }
         }
 
-        void ParseBinaryManifest(Steam3Manifest manifest)
+        void ParseBinaryManifest( Steam3Manifest manifest )
         {
             Files = new List<FileData>( manifest.Mapping.Count );
             FilenamesEncrypted = manifest.AreFileNamesEncrypted;
@@ -405,37 +405,37 @@ namespace SteamKit2
             TotalUncompressedSize = manifest.TotalUncompressedSize;
             TotalCompressedSize = manifest.TotalCompressedSize;
 
-            foreach (var file_mapping in manifest.Mapping)
+            foreach ( var file_mapping in manifest.Mapping )
             {
-                FileData filedata = new FileData(file_mapping.FileName!, file_mapping.HashFileName!, file_mapping.Flags, file_mapping.TotalSize, file_mapping.HashContent!, "", FilenamesEncrypted, file_mapping.Chunks!.Length);
+                FileData filedata = new FileData( file_mapping.FileName!, file_mapping.HashFileName!, file_mapping.Flags, file_mapping.TotalSize, file_mapping.HashContent!, "", FilenamesEncrypted, file_mapping.Chunks!.Length );
 
-                foreach (var chunk in file_mapping.Chunks)
+                foreach ( var chunk in file_mapping.Chunks )
                 {
                     filedata.Chunks.Add( new ChunkData( chunk.ChunkGID!, chunk.Checksum, chunk.Offset, chunk.CompressedSize, chunk.DecompressedSize ) );
                 }
 
-                Files.Add(filedata);
+                Files.Add( filedata );
             }
         }
 
-        void ParseProtobufManifestPayload(ContentManifestPayload payload)
+        void ParseProtobufManifestPayload( ContentManifestPayload payload )
         {
-            Files = new List<FileData>(payload.mappings.Count);
+            Files = new List<FileData>( payload.mappings.Count );
 
-            foreach (var file_mapping in payload.mappings)
+            foreach ( var file_mapping in payload.mappings )
             {
-                FileData filedata = new FileData(file_mapping.filename, file_mapping.sha_filename, (EDepotFileFlag)file_mapping.flags, file_mapping.size, file_mapping.sha_content, file_mapping.linktarget, FilenamesEncrypted, file_mapping.chunks.Count);
+                FileData filedata = new FileData( file_mapping.filename, file_mapping.sha_filename, ( EDepotFileFlag )file_mapping.flags, file_mapping.size, file_mapping.sha_content, file_mapping.linktarget, FilenamesEncrypted, file_mapping.chunks.Count );
 
-                foreach (var chunk in file_mapping.chunks)
+                foreach ( var chunk in file_mapping.chunks )
                 {
                     filedata.Chunks.Add( new ChunkData( chunk.sha, chunk.crc, chunk.offset, chunk.cb_compressed, chunk.cb_original ) );
                 }
 
-                Files.Add(filedata);
+                Files.Add( filedata );
             }
         }
 
-        void ParseProtobufManifestMetadata(ContentManifestMetadata metadata)
+        void ParseProtobufManifestMetadata( ContentManifestMetadata metadata )
         {
             FilenamesEncrypted = metadata.filenames_encrypted;
             DepotID = metadata.depot_id;
@@ -575,9 +575,10 @@ namespace SteamKit2
     }
 }
 
-public partial class JsCrypto {
-    [JSImport("decrypt", "interop.js")]
-    internal static partial byte[] AesDecryptEcb(byte[] key, byte[] data, byte[] iv);
-    [JSImport("decryptcbc", "interop.js")]
-    internal static partial byte[] AesDecryptCbc(byte[] key, byte[] data, byte[] iv);
+public partial class JsCrypto
+{
+    [JSImport( "decryptecb", "interop.js" )]
+    internal static partial byte[] AesDecryptEcb( byte[] key, byte[] data, byte[] iv );
+    [JSImport( "decryptcbc", "interop.js" )]
+    internal static partial byte[] AesDecryptCbc( byte[] key, byte[] data, byte[] iv );
 }
