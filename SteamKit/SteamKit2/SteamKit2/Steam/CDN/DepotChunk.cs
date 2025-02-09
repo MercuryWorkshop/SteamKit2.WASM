@@ -9,11 +9,12 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices.JavaScript;
 
-public partial class JsCrypto3 {
-    [JSImport("decrypt", "interop.js")]
-    internal static partial byte[] AesDecryptEcb(byte[] key, byte[] data, byte[] iv);
-    [JSImport("decryptcbc2", "interop.js")]
-    internal static partial byte[] AesDecryptCbc(byte[] key, byte[] data, byte[] iv);
+public partial class JsCrypto3
+{
+    [JSImport( "decryptecb", "interop.js" )]
+    internal static partial byte[] AesDecryptEcb( byte[] key, byte[] data, byte[] iv );
+    [JSImport( "decryptcbc2", "interop.js" )]
+    internal static partial byte[] AesDecryptCbc( byte[] key, byte[] data, byte[] iv );
 }
 namespace SteamKit2.CDN
 {
@@ -51,8 +52,8 @@ namespace SteamKit2.CDN
             // first 16 bytes of input is the ECB encrypted IV
             Span<byte> iv = stackalloc byte[ 16 ];
             // aes.DecryptEcb( data[ ..iv.Length ], iv, PaddingMode.None );
-            byte[] newiv = JsCrypto3.AesDecryptEcb(depotKey, data[ ..iv.Length ].ToArray(), iv.ToArray());
-            newiv.CopyTo(iv);
+            byte[] newiv = JsCrypto3.AesDecryptEcb( depotKey, data[ ..iv.Length ].ToArray(), iv.ToArray() );
+            newiv.CopyTo( iv );
 
             // With CBC and padding, the decrypted size will always be smaller
             var buffer = ArrayPool<byte>.Shared.Rent( data.Length - iv.Length );
@@ -62,9 +63,9 @@ namespace SteamKit2.CDN
             try
             {
                 // var written = aes.DecryptCbc( data[ iv.Length.. ], iv, buffer, PaddingMode.PKCS7 );
-                var newbuffer = JsCrypto3.AesDecryptCbc(depotKey, data[ iv.Length.. ].ToArray(), iv.ToArray());
+                var newbuffer = JsCrypto3.AesDecryptCbc( depotKey, data[ iv.Length.. ].ToArray(), iv.ToArray() );
                 var written = newbuffer.Length;
-                newbuffer.CopyTo(buffer.AsSpan());
+                newbuffer.CopyTo( buffer.AsSpan() );
 
                 var decryptedStream = new MemoryStream( buffer, 0, written );
 

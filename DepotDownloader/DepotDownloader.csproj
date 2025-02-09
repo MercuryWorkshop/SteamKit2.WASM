@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
   </PropertyGroup>
@@ -6,21 +6,6 @@
 
   <PropertyGroup>
 
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-		<EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
-		<Nullable>disable</Nullable>
-		<DisableBuildCompression>true</DisableBuildCompression>
-		<TrimMode>partial</TrimMode>
-
-		<WasmBuildNative>true</WasmBuildNative>
-		<WasmEnableThreads>true</WasmEnableThreads>
-		<WasmEnableSIMD>true</WasmEnableSIMD>
-		<WasmEnableExceptionHandling>true</WasmEnableExceptionHandling>
-		<WasmAllowUndefinedSymbols>true</WasmAllowUndefinedSymbols>
-		<EmccExtraLDFlags>-sMIN_WEBGL_VERSION=2 -sWASMFS -Wl,--no-check-features</EmccExtraLDFlags>
-		<EmccLinkOptimizationFlag>-O2</EmccLinkOptimizationFlag>
-		<EmccCompileOptimizationFlag>-O2</EmccCompileOptimizationFlag>
-    <EmccEnvironment>web,worker</EmccEnvironment>
   </PropertyGroup>
 
   <!-- <ItemGroup> -->
@@ -39,12 +24,10 @@
     <ProjectReference Include="../SteamKit/SteamKit2/SteamKit2/SteamKit2.csproj"/>
 
     <ProjectReference Include="../protobuf-net/src/protobuf-net/protobuf-net.csproj"/>
-
-
-		<NativeFileReference Include="statics\SDL2.a" />
-		<NativeFileReference Include="statics\FNA3D.a" />
-		<NativeFileReference Include="statics\libmojoshader.a" />
-		<NativeFileReference Include="statics\FAudio.a" />
-		<NativeFileReference Include="Emscripten.c" />
+		<!-- <NativeFileReference Include="statics\SDL2.a" /> -->
+		<!-- <NativeFileReference Include="statics\FNA3D.a" /> -->
+		<!-- <NativeFileReference Include="statics\libmojoshader.a" /> -->
+		<!-- <NativeFileReference Include="statics\FAudio.a" /> -->
+		<!-- <NativeFileReference Include="Emscripten.c" /> -->
   </ItemGroup>
 </Project>

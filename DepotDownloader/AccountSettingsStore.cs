@@ -12,7 +12,7 @@ using ProtoBuf;
 namespace DepotDownloader
 {
     [ProtoContract]
-    class AccountSettingsStore
+    public class AccountSettingsStore
     {
         // Member 1 was a Dictionary<string, byte[]> for SentryData.
 
@@ -65,7 +65,7 @@ namespace DepotDownloader
             // }
             // else
             // {
-                Instance = new AccountSettingsStore();
+            Instance = new AccountSettingsStore();
 
             Instance.FileName = filename;
         }

@@ -7,7 +7,7 @@ const runtime = await dotnet.withConfig({
   jsThreadBlockingMode: "DangerousAllowBlockingWait",
   pthreadInitialPoolSize: 20,
 }).create();
-console.log("???");
+
 export function encryptRSA(data, n, e) {
   const modExp = (base, exp, mod) => {
     let result = 1n;

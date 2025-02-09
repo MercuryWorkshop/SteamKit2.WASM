@@ -13,11 +13,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 using SteamKit2.Util;
-using SteamKit2.Util.MacHelpers;
-using static SteamKit2.Util.MacHelpers.CoreFoundation;
-using static SteamKit2.Util.MacHelpers.DiskArbitration;
-using static SteamKit2.Util.MacHelpers.IOKit;
-using static SteamKit2.Util.MacHelpers.LibC;
+// using static SteamKit2.Util.MacHelpers.DiskArbitration;
+// using static SteamKit2.Util.MacHelpers.IOKit;
+// using static SteamKit2.Util.MacHelpers.LibC;
 
 namespace SteamKit2
 {
@@ -30,10 +28,10 @@ namespace SteamKit2
                 return new WindowsMachineInfoProvider();
             }
 
-            if ( RuntimeInformation.IsOSPlatform( OSPlatform.OSX ) )
-            {
-                return new MacOSMachineInfoProvider();
-            }
+            // if ( RuntimeInformation.IsOSPlatform( OSPlatform.OSX ) )
+            // {
+            //     return new MacOSMachineInfoProvider();
+            // }
 
             if ( RuntimeInformation.IsOSPlatform( OSPlatform.Linux ) )
             {
@@ -219,7 +217,7 @@ namespace SteamKit2
 
             if ( diskUuids.Length > 0 )
             {
-                return Encoding.UTF8.GetBytes( diskUuids[0] );
+                return Encoding.UTF8.GetBytes( diskUuids[ 0 ] );
             }
 
             return null;
@@ -322,60 +320,60 @@ namespace SteamKit2
         }
     }
 
-    [SupportedOSPlatform( "macos" )]
-    sealed class MacOSMachineInfoProvider : IMachineInfoProvider
-    {
-        public byte[]? GetMachineGuid()
-        {
-            uint platformExpert = IOServiceGetMatchingService( kIOMasterPortDefault, IOServiceMatching( "IOPlatformExpertDevice" ) );
-            if ( platformExpert != 0 )
-            {
-                try
-                {
-                    using var serialNumberKey = CFStringCreateWithCString( CFTypeRef.None, kIOPlatformSerialNumberKey, CFStringEncoding.kCFStringEncodingASCII );
-                    var serialNumberAsString = IORegistryEntryCreateCFProperty( platformExpert, serialNumberKey, CFTypeRef.None, 0 );
-                    var sb = new StringBuilder( 64 );
-                    if ( CFStringGetCString( serialNumberAsString, sb, sb.Capacity, CFStringEncoding.kCFStringEncodingASCII ) )
-                    {
-                        return Encoding.ASCII.GetBytes( sb.ToString() );
-                    }
-                }
-                finally
-                {
-                    _ =  IOObjectRelease( platformExpert );
-                }
-            }
-
-            return null;
-        }
-
-        public byte[]? GetMacAddress() => null;
-
-        public byte[]? GetDiskId()
-        {
-            var stat = new StatFS();
-            var statted = statfs64( "/", ref stat );
-            if ( statted == 0 )
-            {
-                using var session = DASessionCreate( CFTypeRef.None );
-                using var disk = DADiskCreateFromBSDName( CFTypeRef.None, session, stat.f_mntfromname );
-                using var properties = DADiskCopyDescription( disk );
-                using var key = CFStringCreateWithCString( CFTypeRef.None, DiskArbitration.kDADiskDescriptionMediaUUIDKey, CFStringEncoding.kCFStringEncodingASCII );
-                IntPtr cfuuid = IntPtr.Zero;
-                if ( CFDictionaryGetValueIfPresent( properties, key, out cfuuid ) )
-                {
-                    using var uuidString = CFUUIDCreateString( CFTypeRef.None, cfuuid );
-                    var stringBuilder = new StringBuilder( 64 );
-                    if ( CFStringGetCString( uuidString, stringBuilder, stringBuilder.Capacity, CFStringEncoding.kCFStringEncodingASCII ) )
-                    {
-                        return Encoding.ASCII.GetBytes( stringBuilder.ToString() );
-                    }
-                }
-            }
-
-            return null;
-        }
-    }
+    // [SupportedOSPlatform( "macos" )]
+    // sealed class MacOSMachineInfoProvider : IMachineInfoProvider
+    // {
+    //     public byte[]? GetMachineGuid()
+    //     {
+    //         uint platformExpert = IOServiceGetMatchingService( kIOMasterPortDefault, IOServiceMatching( "IOPlatformExpertDevice" ) );
+    //         if ( platformExpert != 0 )
+    //         {
+    //             try
+    //             {
+    //                 using var serialNumberKey = CFStringCreateWithCString( CFTypeRef.None, kIOPlatformSerialNumberKey, CFStringEncoding.kCFStringEncodingASCII );
+    //                 var serialNumberAsString = IORegistryEntryCreateCFProperty( platformExpert, serialNumberKey, CFTypeRef.None, 0 );
+    //                 var sb = new StringBuilder( 64 );
+    //                 if ( CFStringGetCString( serialNumberAsString, sb, sb.Capacity, CFStringEncoding.kCFStringEncodingASCII ) )
+    //                 {
+    //                     return Encoding.ASCII.GetBytes( sb.ToString() );
+    //                 }
+    //             }
+    //             finally
+    //             {
+    //                 _ = IOObjectRelease( platformExpert );
+    //             }
+    //         }
+    //
+    //         return null;
+    //     }
+    //
+    //     public byte[]? GetMacAddress() => null;
+    //
+    //     public byte[]? GetDiskId()
+    //     {
+    //         var stat = new StatFS();
+    //         var statted = statfs64( "/", ref stat );
+    //         if ( statted == 0 )
+    //         {
+    //             using var session = DASessionCreate( CFTypeRef.None );
+    //             using var disk = DADiskCreateFromBSDName( CFTypeRef.None, session, stat.f_mntfromname );
+    //             using var properties = DADiskCopyDescription( disk );
+    //             using var key = CFStringCreateWithCString( CFTypeRef.None, DiskArbitration.kDADiskDescriptionMediaUUIDKey, CFStringEncoding.kCFStringEncodingASCII );
+    //             IntPtr cfuuid = IntPtr.Zero;
+    //             if ( CFDictionaryGetValueIfPresent( properties, key, out cfuuid ) )
+    //             {
+    //                 using var uuidString = CFUUIDCreateString( CFTypeRef.None, cfuuid );
+    //                 var stringBuilder = new StringBuilder( 64 );
+    //                 if ( CFStringGetCString( uuidString, stringBuilder, stringBuilder.Capacity, CFStringEncoding.kCFStringEncodingASCII ) )
+    //                 {
+    //                     return Encoding.ASCII.GetBytes( stringBuilder.ToString() );
+    //                 }
+    //             }
+    //         }
+    //
+    //         return null;
+    //     }
+    // }
 
     static class HardwareUtils
     {
@@ -384,52 +382,52 @@ namespace SteamKit2
             public MachineID()
                 : base()
             {
-                this.KeyValues["BB3"] = new KeyValue();
-                this.KeyValues["FF2"] = new KeyValue();
-                this.KeyValues["3B3"] = new KeyValue();
+                this.KeyValues[ "BB3" ] = new KeyValue();
+                this.KeyValues[ "FF2" ] = new KeyValue();
+                this.KeyValues[ "3B3" ] = new KeyValue();
             }
 
 
             public void SetBB3( string value )
             {
-                this.KeyValues["BB3"].Value = value;
+                this.KeyValues[ "BB3" ].Value = value;
             }
 
             public void SetFF2( string value )
             {
-                this.KeyValues["FF2"].Value = value;
+                this.KeyValues[ "FF2" ].Value = value;
             }
 
             public void Set3B3( string value )
             {
-                this.KeyValues["3B3"].Value = value;
+                this.KeyValues[ "3B3" ].Value = value;
             }
 
             public void Set333( string value )
             {
-                this.KeyValues["333"] = new KeyValue( value: value );
+                this.KeyValues[ "333" ] = new KeyValue( value: value );
             }
         }
 
         static ConditionalWeakTable<IMachineInfoProvider, Task<MachineID>> generationTable = [];
 
-        public static void Init(IMachineInfoProvider machineInfoProvider)
+        public static void Init( IMachineInfoProvider machineInfoProvider )
         {
-            lock (machineInfoProvider)
+            lock ( machineInfoProvider )
             {
-                _ = generationTable.GetValue(machineInfoProvider, p => Task.Factory.StartNew( GenerateMachineID, state: p ));
+                _ = generationTable.GetValue( machineInfoProvider, p => Task.Factory.StartNew( GenerateMachineID, state: p ) );
             }
         }
 
-        public static byte[]? GetMachineID(IMachineInfoProvider machineInfoProvider)
+        public static byte[]? GetMachineID( IMachineInfoProvider machineInfoProvider )
         {
-            if (!generationTable.TryGetValue(machineInfoProvider, out var generateTask))
+            if ( !generationTable.TryGetValue( machineInfoProvider, out var generateTask ) )
             {
                 DebugLog.WriteLine( nameof( HardwareUtils ), "GetMachineID() called before Init()" );
                 return null;
             }
 
-            DebugLog.Assert(generateTask != null, nameof( HardwareUtils ), "GetMachineID() found null task - should be impossible.");
+            DebugLog.Assert( generateTask != null, nameof( HardwareUtils ), "GetMachineID() found null task - should be impossible." );
 
             try
             {
@@ -441,10 +439,10 @@ namespace SteamKit2
                     return null;
                 }
             }
-            catch (AggregateException ex) when (ex.InnerException != null && generateTask.IsFaulted)
+            catch ( AggregateException ex ) when ( ex.InnerException != null && generateTask.IsFaulted )
             {
                 // Rethrow the original exception rather than a wrapped AggregateException.
-                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
+                ExceptionDispatchInfo.Capture( ex.InnerException ).Throw();
             }
 
             MachineID machineId = generateTask.Result;
@@ -455,13 +453,13 @@ namespace SteamKit2
         }
 
 
-        static MachineID GenerateMachineID(object? state)
+        static MachineID GenerateMachineID( object? state )
         {
             // the aug 25th 2015 CM update made well-formed machine MessageObjects required for logon
             // this was flipped off shortly after the update rolled out, likely due to linux steamclients running on distros without a way to build a machineid
             // so while a valid MO isn't currently (as of aug 25th) required, they could be in the future and we'll abide by The Valve Law now
 
-            var provider = (IMachineInfoProvider)state!;
+            var provider = ( IMachineInfoProvider )state!;
 
             var machineId = new MachineID();
 
