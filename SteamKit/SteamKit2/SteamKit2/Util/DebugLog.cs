@@ -143,10 +143,10 @@ namespace SteamKit2
         /// <param name="args">An System.Object array containing zero or more objects to format.</param>
         public static void WriteLine( string category, string msg, params object?[]? args )
         {
-            // if ( !DebugLog.Enabled )
-            // {
-            //     return;
-            // }
+            if ( !DebugLog.Enabled )
+            {
+                return;
+            }
 
             string strMsg;
 
