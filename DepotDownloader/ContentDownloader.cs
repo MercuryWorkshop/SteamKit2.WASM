@@ -402,17 +402,17 @@ namespace DepotDownloader
             Directory.CreateDirectory(Path.GetDirectoryName(fileStagingPath));
 
             using (var file = File.OpenWrite(fileStagingPath))
-                // using (var client = HttpClientFactory.CreateHttpClient())
-                // {
-                //     Console.WriteLine("Downloading {0}", fileName);
-                //     var responseStream = await client.GetStreamAsync(url);
-                //     await responseStream.CopyToAsync(file);
-                // }
+            using (var client = HttpClientFactory.CreateHttpClient())
+            {
+                Console.WriteLine("Downloading {0}", fileName);
+                var responseStream = await client.GetStreamAsync(url);
+                await responseStream.CopyToAsync(file);
+            }
 
-                if (File.Exists(fileFinalPath))
-                {
-                    File.Delete(fileFinalPath);
-                }
+            if (File.Exists(fileFinalPath))
+            {
+                File.Delete(fileFinalPath);
+            }
 
             File.Move(fileStagingPath, fileFinalPath);
         }
