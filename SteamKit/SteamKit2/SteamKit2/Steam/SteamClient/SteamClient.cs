@@ -33,11 +33,13 @@ namespace SteamKit2
         internal AsyncJobManager jobManager;
 
         SteamAuthentication? _authentication = null;
+        SteamCloudS? _cloud = null;
 
         /// <summary>
         /// Handler used for authenticating on Steam.
         /// </summary>
         public SteamAuthentication Authentication => _authentication ??= new SteamAuthentication( this );
+        public SteamCloudS Cloud => _cloud ??= new SteamCloudS( this );
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SteamClient"/> class with the default configuration.
