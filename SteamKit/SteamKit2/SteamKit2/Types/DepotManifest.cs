@@ -310,8 +310,6 @@ namespace SteamKit2
                     MemoryExtensions.Replace( bufferDecrypted.AsSpan(), ( byte )altDirChar, ( byte )Path.DirectorySeparatorChar );
 
                     file.FileName = Encoding.UTF8.GetString( bufferDecrypted, 0, filenameLength );
-                    Console.WriteLine( file.FileName );
-                    Console.WriteLine(filenameLength );
                 }
             }
             finally

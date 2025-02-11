@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../SteamKit/SteamKit2\SteamKit2\SteamKit2.csproj" />
-    <NativeFileReference Include="NativeCrypto.c" />
     <ProjectReference Include="../DepotDownloader/DepotDownloader.csproj" />
   </ItemGroup>
 
