@@ -13,7 +13,8 @@ using System.Security.Cryptography;
 using System.Text;
 using ProtoBuf;
 using SteamKit2.Internal;
-using System.Runtime.InteropServices.JavaScript;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace SteamKit2
 {
@@ -214,6 +215,8 @@ namespace SteamKit2
 
 
 
+    [DllImport("libc")]
+    private static extern void abort();
         /// <summary>
         /// Attempts to decrypts file names with the given encryption key.
         /// </summary>
@@ -221,6 +224,7 @@ namespace SteamKit2
         /// <returns><c>true</c> if the file names were successfully decrypted; otherwise, <c>false</c>.</returns>
         public bool DecryptFilenames( byte[] encryptionKey )
         {
+            Console.WriteLine( "Decrypting filenames" );
             if ( !FilenamesEncrypted )
             {
                 return true;
@@ -267,11 +271,25 @@ namespace SteamKit2
                     {
                         var encryptedFilename = bufferDecoded.AsSpan()[ ..decodedLength ];
 
-                        var newiv = JsCrypto.AesDecryptEcb( encryptionKey.ToArray(), encryptedFilename[ ..iv.Length ].ToArray(), iv.ToArray() );
-                        newiv.CopyTo( iv );
-                        byte[] newBufferDecrypted = JsCrypto.AesDecryptCbc( encryptionKey.ToArray(), encryptedFilename[ iv.Length.. ].ToArray(), iv.ToArray() );
-                        newBufferDecrypted.CopyTo( bufferDecrypted.AsSpan() );
-                        filenameLength = newBufferDecrypted.Length;
+                        unsafe
+                        {
+                            var ciphertext = encryptedFilename[ ..iv.Length ].ToArray();
+                            fixed ( byte* pciphertext = ciphertext, piv = iv )
+                            {
+                                NativeCrypto.AesDecryptEcb( encryptionKey.ToArray(), 32, pciphertext, ciphertext.Length, piv );
+                            }
+                        }
+
+                        unsafe
+                        {
+                            var ciphertext = encryptedFilename[ iv.Length.. ].ToArray();
+                            // allocate at least as much as the encrypted filename
+                            fixed ( byte* pciphertext = ciphertext, pdest = bufferDecrypted, piv = iv )
+                            {
+                                filenameLength = NativeCrypto.AesDecryptCbc( encryptionKey.ToArray(), 32, piv, pciphertext, ciphertext.Length, pdest );
+                            }
+                        }
+
                         // aes.DecryptEcb( encryptedFilename[ ..iv.Length ], iv, PaddingMode.None );
                         // filenameLength = aes.DecryptCbc( encryptedFilename[ iv.Length.. ], iv, bufferDecrypted, PaddingMode.PKCS7 );
                     }
@@ -283,7 +301,7 @@ namespace SteamKit2
                     }
 
                     // Trim the ending null byte, safe for UTF-8
-                    if ( filenameLength > 0 && bufferDecrypted[ filenameLength ] == 0 )
+                    if ( filenameLength > 0 && bufferDecrypted[ filenameLength - 1 ] == 0 )
                     {
                         filenameLength--;
                     }
@@ -292,6 +310,8 @@ namespace SteamKit2
                     MemoryExtensions.Replace( bufferDecrypted.AsSpan(), ( byte )altDirChar, ( byte )Path.DirectorySeparatorChar );
 
                     file.FileName = Encoding.UTF8.GetString( bufferDecrypted, 0, filenameLength );
+                    Console.WriteLine( file.FileName );
+                    Console.WriteLine(filenameLength );
                 }
             }
             finally
@@ -299,6 +319,7 @@ namespace SteamKit2
                 ArrayPool<byte>.Shared.Return( bufferDecoded );
                 ArrayPool<byte>.Shared.Return( bufferDecrypted );
             }
+
 
             // Sort file entries alphabetically because that's what Steam does
             // TODO: Doesn't match Steam sorting if there are non-ASCII names present
@@ -572,12 +593,4 @@ namespace SteamKit2
             bw.Write( DepotManifest.PROTOBUF_ENDOFMANIFEST_MAGIC );
         }
     }
-}
-
-public partial class JsCrypto
-{
-    [JSImport( "decryptecb", "interop.js" )]
-    internal static partial byte[] AesDecryptEcb( byte[] key, byte[] data, byte[] iv );
-    [JSImport( "decryptcbc", "interop.js" )]
-    internal static partial byte[] AesDecryptCbc( byte[] key, byte[] data, byte[] iv );
 }

@@ -116,7 +116,7 @@ namespace DepotDownloader
                 try
                 {
 
-                    Directory.CreateDirectory(Path.GetDirectoryName(file.filename));
+                    Directory.CreateDirectory(Path.GetDirectoryName(prefix + file.filename));
 
                     using var fs = File.OpenWrite(prefix + file.filename);
                     var downloadUrl = file.url;

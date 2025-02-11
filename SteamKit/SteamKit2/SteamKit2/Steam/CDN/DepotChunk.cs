@@ -9,13 +9,6 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices.JavaScript;
 
-public partial class JsCrypto3
-{
-    [JSImport( "decryptecb", "interop.js" )]
-    internal static partial byte[] AesDecryptEcb( byte[] key, byte[] data, byte[] iv );
-    [JSImport( "decryptcbc2", "interop.js" )]
-    internal static partial byte[] AesDecryptCbc( byte[] key, byte[] data, byte[] iv );
-}
 namespace SteamKit2.CDN
 {
     /// <summary>
@@ -52,8 +45,13 @@ namespace SteamKit2.CDN
             // first 16 bytes of input is the ECB encrypted IV
             Span<byte> iv = stackalloc byte[ 16 ];
             // aes.DecryptEcb( data[ ..iv.Length ], iv, PaddingMode.None );
-            byte[] newiv = JsCrypto3.AesDecryptEcb( depotKey, data[ ..iv.Length ].ToArray(), iv.ToArray() );
-            newiv.CopyTo( iv );
+            unsafe {
+                var ciphertext = data[ ..iv.Length ].ToArray();
+                fixed ( byte* pciphertext = ciphertext, piv = iv )
+                {
+                    NativeCrypto.AesDecryptEcb( depotKey, 32, pciphertext, ciphertext.Length, piv );
+                }
+            }
 
             // With CBC and padding, the decrypted size will always be smaller
             var buffer = ArrayPool<byte>.Shared.Rent( data.Length - iv.Length );
@@ -63,19 +61,23 @@ namespace SteamKit2.CDN
             try
             {
                 // var written = aes.DecryptCbc( data[ iv.Length.. ], iv, buffer, PaddingMode.PKCS7 );
-                var newbuffer = JsCrypto3.AesDecryptCbc( depotKey, data[ iv.Length.. ].ToArray(), iv.ToArray() );
-                var written = newbuffer.Length;
-                newbuffer.CopyTo( buffer.AsSpan() );
+                unsafe {
+                    var ciphertext = data[ iv.Length.. ].ToArray();
+                    fixed ( byte* pciphertext = ciphertext, piv = iv, pdest = buffer )
+                    {
+                        var written = NativeCrypto.AesDecryptCbc( depotKey, 32, piv, pciphertext, ciphertext.Length, pdest );
 
-                var decryptedStream = new MemoryStream( buffer, 0, written );
+                        var decryptedStream = new MemoryStream( buffer, 0, written );
 
-                if ( buffer.Length > 1 && buffer[ 0 ] == 'V' && buffer[ 1 ] == 'Z' )
-                {
-                    writtenDecompressed = VZipUtil.Decompress( decryptedStream, destination, verifyChecksum: false );
-                }
-                else
-                {
-                    writtenDecompressed = ZipUtil.Decompress( decryptedStream, destination, verifyChecksum: false );
+                        if ( buffer.Length > 1 && buffer[ 0 ] == 'V' && buffer[ 1 ] == 'Z' )
+                        {
+                            writtenDecompressed = VZipUtil.Decompress( decryptedStream, destination, verifyChecksum: false );
+                        }
+                        else
+                        {
+                            writtenDecompressed = ZipUtil.Decompress( decryptedStream, destination, verifyChecksum: false );
+                        }
+                    }
                 }
             }
             finally

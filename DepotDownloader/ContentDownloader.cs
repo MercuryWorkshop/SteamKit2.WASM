@@ -28,7 +28,7 @@ namespace DepotDownloader
 
         public static DownloadConfig Config = new();
 
-        private static Steam3Session steam3;
+        public static Steam3Session steam3;
         private static CDNClientPool cdnPool;
 
         private const string DEFAULT_DOWNLOAD_DIR = "depots";
