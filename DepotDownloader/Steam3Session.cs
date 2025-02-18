@@ -16,6 +16,10 @@ using SteamKit2.Internal;
 using System.IO;
 using System.Security.Cryptography;
 using System.Net.Http;
+using SteamKit2.Authentication;
+using SteamKit2.Internal;
+using System.Security.Cryptography;
+using System.Net.Http.Headers;
 
 namespace DepotDownloader
 {
@@ -147,53 +151,50 @@ namespace DepotDownloader
 
             uint fileSize = (uint)fileData.Length;
 
-            Task.Run(async () =>
+            try
             {
-                try
+                Console.WriteLine("Uploading file {0} {1}", filename, fileShaHex);
+                var response = await steamClient.Cloud.BeginHttpUpload(appid, filename, fileSize, fileShaHex);
+                using var client = new HttpClient();
+
+                var url = $"https://{response.url_host}{response.url_path}";
+                Console.WriteLine(url);
+
+                var content = new ByteArrayContent(fileData);
+
+                content.Headers.ContentDisposition = new ContentDispositionHeaderValue("inline")
                 {
-                    Console.WriteLine("Uploading file {0} {1}", filename, fileShaHex);
-                    var response = await steamClient.Cloud.BeginHttpUpload(appid, filename, fileSize, fileShaHex);
-                    using var client = new HttpClient();
+                    FileNameStar = filename,
+                };
+                content.Headers.ContentLength = fileSize;
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
 
-                    var url = $"https://{response.url_host}{response.url_path}";
-                    Console.WriteLine(url);
-
-                    var content = new ByteArrayContent(fileData);
-
-                    content.Headers.ContentDisposition = new ContentDispositionHeaderValue("inline")
-                    {
-                        FileNameStar = filename,
-                    };
-                    content.Headers.ContentLength = fileSize;
-                    content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, url)
-                    {
-                        Content = content
-                    };
-
-                    foreach (var header in response.request_headers)
-                    {
-                        if (header.name == "Content-Disposition") continue;
-                        if (header.name == "Content-Length") continue;
-                        if (header.name == "Content-Type") continue;
-                        request.Headers.Add(header.name, header.value);
-                    }
-
-
-                    HttpResponseMessage res = await client.SendAsync(request);
-                    Console.WriteLine($"Response Status: {res.StatusCode}");
-                    bool success = res.IsSuccessStatusCode;
-                    await steamClient.Cloud.CommitHttpUpload(appid, filename, fileShaHex, success);
-                    return success;
-                }
-                catch (Exception e)
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Put, url)
                 {
-                    Console.WriteLine("Failed to upload file {0} {1}", filename, e);
-                    await steamClient.Cloud.CommitHttpUpload(appid, filename, fileShaHex, false);
-                    return false;
+                    Content = content
+                };
+
+                foreach (var header in response.request_headers)
+                {
+                    if (header.name == "Content-Disposition") continue;
+                    if (header.name == "Content-Length") continue;
+                    if (header.name == "Content-Type") continue;
+                    request.Headers.Add(header.name, header.value);
                 }
-            });
+
+
+                HttpResponseMessage res = await client.SendAsync(request);
+                Console.WriteLine($"Response Status: {res.StatusCode}");
+                bool success = res.IsSuccessStatusCode;
+                await steamClient.Cloud.CommitHttpUpload(appid, filename, fileShaHex, success);
+                return success;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to upload file {0} {1}", filename, e);
+                await steamClient.Cloud.CommitHttpUpload(appid, filename, fileShaHex, false);
+                return false;
+            }
 
         }
 
