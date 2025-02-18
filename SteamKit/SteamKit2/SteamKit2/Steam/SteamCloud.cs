@@ -55,7 +55,48 @@ namespace SteamKit2
             return response.Body;
         }
 
+        public async Task<CCloud_BeginHTTPUpload_Response> BeginHttpUpload( uint appid, string filename, uint file_size, string file_sha )
+        {
+            var request = new CCloud_BeginHTTPUpload_Request
+            {
+                appid = appid,
+                file_size = file_size,
+                filename = filename,
+                is_public = true,
+                file_sha = file_sha,
+            };
+
+            var response = await CloudService.BeginHTTPUpload( request );
+
+            if ( response.Result != EResult.OK )
+            {
+                throw new Exception( "Failed to upload: " + response.Result );
+            }
+
+            return response.Body;
+        }
+
+        public async Task<CCloud_CommitHTTPUpload_Response> CommitHttpUpload( uint appid, string filename, string file_sha, bool success )
+        {
+            var request = new CCloud_CommitHTTPUpload_Request
+            {
+                appid = appid,
+                filename = filename,
+                file_sha = file_sha,
+                transfer_succeeded = success,
+            };
+
+            var response = await CloudService.CommitHTTPUpload( request );
+
+            if ( response.Result != EResult.OK )
+            {
+                throw new Exception( "Failed to commit upload: " + response.Result );
+            }
+
+            return response.Body;
+        }
     }
+
 }
 
 
