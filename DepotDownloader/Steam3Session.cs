@@ -139,6 +139,43 @@ namespace DepotDownloader
             return success;
         }
 
+        public async Task<bool> UploadSteamCloud(uint appid, uint count, string prefix)
+        {
+            var success = true;
+            var files = Directory.GetFiles(prefix, "*", SearchOption.AllDirectories);
+            var remoteFiles = await steamClient.Cloud.EnumerateUserFiles(appid, count);
+            foreach (var file in files)
+            {
+                var filename = file.Substring(prefix.Length);
+                if (filename == "")
+                {
+                    continue;
+                }
+
+                var remoteFile = remoteFiles.files.FirstOrDefault(f => f.filename == filename);
+                if (remoteFile != null)
+                {
+                    var sha = SHA1.Create();
+                    using var stream = File.OpenRead(file);
+                    var hash = sha.ComputeHash(stream);
+                    var hashString = BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+                    if (hashString == remoteFile.file_sha)
+                    {
+                        Console.WriteLine("File {0} is already uploaded and has the correct hash", filename);
+                        continue;
+                    }
+                }
+
+                Console.WriteLine("Uploading file {0}", filename);
+                if (!await UploadSteamCloudFile(appid, file))
+                {
+                    success = false;
+                    Console.WriteLine("Failed to upload file {0}", filename);
+                }
+            }
+            return success;
+        }
+
         public async Task<bool> UploadSteamCloudFile(uint appid, string filename)
         {
             FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read);
