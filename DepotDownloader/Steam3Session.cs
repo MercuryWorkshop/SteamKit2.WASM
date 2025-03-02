@@ -167,7 +167,8 @@ namespace DepotDownloader
                 }
 
                 Console.WriteLine("Uploading file {0}", filename);
-                if (!await UploadSteamCloudFile(appid, file))
+                FileStream fileStream = new FileStream(file, FileMode.Open, FileAccess.Read);
+                if (!await UploadSteamCloudFile(appid, filename, fileStream))
                 {
                     success = false;
                     Console.WriteLine("Failed to upload file {0}", filename);
@@ -176,9 +177,8 @@ namespace DepotDownloader
             return success;
         }
 
-        public async Task<bool> UploadSteamCloudFile(uint appid, string filename)
+        public async Task<bool> UploadSteamCloudFile(uint appid, string filename, FileStream fileStream)
         {
-            FileStream fileStream = new FileStream(filename, FileMode.Open, FileAccess.Read);
             byte[] fileData = new byte[fileStream.Length];
             fileStream.Read(fileData, 0, fileData.Length);
 
