@@ -23,7 +23,7 @@ namespace SteamKit2.CDN
         /// <summary>
         /// Default timeout to use when making requests
         /// </summary>
-        public static TimeSpan RequestTimeout { get; set; } = TimeSpan.FromSeconds( 10 );
+        public static TimeSpan RequestTimeout { get; set; } = TimeSpan.FromSeconds( 60 );
         /// <summary>
         /// Default timeout to use when reading the response body
         /// </summary>
